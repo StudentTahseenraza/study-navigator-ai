@@ -94,6 +94,56 @@ export type Database = {
         }
         Relationships: []
       }
+      deadline_reminders: {
+        Row: {
+          created_at: string
+          deadline_date: string
+          description: string | null
+          id: string
+          is_active: boolean
+          remind_days_before: number[]
+          reminder_type: string
+          title: string
+          university_id: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline_date: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          remind_days_before?: number[]
+          reminder_type: string
+          title: string
+          university_id?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline_date?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          remind_days_before?: number[]
+          reminder_type?: string
+          title?: string
+          university_id?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deadline_reminders_university_id_fkey"
+            columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locked_universities: {
         Row: {
           id: number
@@ -120,6 +170,69 @@ export type Database = {
           {
             foreignKeyName: "locked_universities_university_id_fkey"
             columns: ["university_id"]
+            isOneToOne: false
+            referencedRelation: "universities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          dismissed_at: string | null
+          due_date: string | null
+          id: string
+          message: string
+          metadata: Json | null
+          priority: string
+          read_at: string | null
+          related_task_id: number | null
+          related_university_id: number | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dismissed_at?: string | null
+          due_date?: string | null
+          id?: string
+          message: string
+          metadata?: Json | null
+          priority?: string
+          read_at?: string | null
+          related_task_id?: number | null
+          related_university_id?: number | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dismissed_at?: string | null
+          due_date?: string | null
+          id?: string
+          message?: string
+          metadata?: Json | null
+          priority?: string
+          read_at?: string | null
+          related_task_id?: number | null
+          related_university_id?: number | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_related_task_id_fkey"
+            columns: ["related_task_id"]
+            isOneToOne: false
+            referencedRelation: "ai_tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_related_university_id_fkey"
+            columns: ["related_university_id"]
             isOneToOne: false
             referencedRelation: "universities"
             referencedColumns: ["id"]

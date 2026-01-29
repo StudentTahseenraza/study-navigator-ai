@@ -1,8 +1,9 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/auth';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { 
   GraduationCap, 
   LayoutDashboard, 
@@ -17,7 +18,6 @@ import {
   X,
   Sparkles
 } from 'lucide-react';
-import { useState } from 'react';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -128,6 +128,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <p className="font-medium text-sm truncate">{profile?.full_name || 'Student'}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
+            <NotificationBell />
           </div>
           <Button 
             variant="ghost" 
@@ -149,13 +150,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </div>
             <span className="font-display font-bold">AI Counsellor</span>
           </Link>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
