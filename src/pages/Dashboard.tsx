@@ -2,6 +2,7 @@ import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useProfile } from '@/hooks/useProfile';
 import { useUniversities } from '@/hooks/useUniversities';
 import { useTasks } from '@/hooks/useTasks';
+import { UpcomingDeadlines } from '@/components/notifications/UpcomingDeadlines';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -302,6 +303,9 @@ export const Dashboard = () => {
                 </div>
               )}
             </div>
+
+            {/* Upcoming Deadlines */}
+            <UpcomingDeadlines />
           </div>
         </div>
 
