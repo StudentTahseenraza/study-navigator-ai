@@ -12,6 +12,7 @@ import Counsellor from "./pages/Counsellor";
 import Universities from "./pages/Universities";
 import Shortlist from "./pages/Shortlist";
 import Tasks from "./pages/Tasks";
+import Documents from "./pages/Documents";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +35,7 @@ const App = () => (
             <Route path="/universities" element={<Universities />} />
             <Route path="/shortlist" element={<Shortlist />} />
             <Route path="/tasks" element={<Tasks />} />
+            <Route path="/documents" element={<Documents />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

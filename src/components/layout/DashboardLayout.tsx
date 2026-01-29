@@ -10,6 +10,7 @@ import {
   Search, 
   Lock, 
   CheckSquare,
+  FileText,
   User,
   LogOut,
   Menu,
@@ -28,6 +29,7 @@ const navItems = [
   { path: '/universities', label: 'Universities', icon: Search },
   { path: '/shortlist', label: 'My Shortlist', icon: Lock },
   { path: '/tasks', label: 'To-Do List', icon: CheckSquare },
+  { path: '/documents', label: 'Documents', icon: FileText },
   { path: '/profile', label: 'Profile', icon: User },
 ];
 
