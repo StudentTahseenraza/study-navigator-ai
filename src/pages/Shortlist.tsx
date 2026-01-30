@@ -287,15 +287,22 @@ export const Shortlist = () => {
                   {lockedUniversities.length} {lockedUniversities.length === 1 ? 'University' : 'Universities'} Locked!
                 </h3>
                 <p className="text-muted-foreground">
-                  Application guidance is now available. Check your tasks for next steps.
+                  Complete your tasks and submit your applications.
                 </p>
               </div>
-              <Link to="/tasks">
-                <Button className="gradient-bg text-white hover:opacity-90">
-                  View Tasks
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                <Link to="/tasks">
+                  <Button variant="outline">
+                    View Tasks
+                  </Button>
+                </Link>
+                <Link to="/applications">
+                  <Button className="gradient-bg text-white hover:opacity-90">
+                    Apply Now
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
         ) : shortlist.length > 0 ? (

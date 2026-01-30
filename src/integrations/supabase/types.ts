@@ -146,6 +146,11 @@ export type Database = {
       }
       locked_universities: {
         Row: {
+          application_id: string | null
+          application_portal_url: string | null
+          application_status: string | null
+          applied_at: string | null
+          decision_date: string | null
           id: number
           locked_at: string | null
           notes: string | null
@@ -153,6 +158,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          application_id?: string | null
+          application_portal_url?: string | null
+          application_status?: string | null
+          applied_at?: string | null
+          decision_date?: string | null
           id?: number
           locked_at?: string | null
           notes?: string | null
@@ -160,6 +170,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          application_id?: string | null
+          application_portal_url?: string | null
+          application_status?: string | null
+          applied_at?: string | null
+          decision_date?: string | null
           id?: number
           locked_at?: string | null
           notes?: string | null
