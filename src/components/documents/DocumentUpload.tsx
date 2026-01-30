@@ -73,7 +73,7 @@ export const DocumentUpload = () => {
     await uploadDocument.mutateAsync({
       file: selectedFile,
       documentType,
-      universityId: universityId ? parseInt(universityId) : undefined,
+      universityId: universityId && universityId !== 'none' ? parseInt(universityId) : undefined,
       notes: notes || undefined,
     });
 
@@ -184,7 +184,7 @@ export const DocumentUpload = () => {
                   <SelectValue placeholder="Select a university" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {lockedUniversities.map((locked) => (
                     <SelectItem key={locked.university_id} value={locked.university_id.toString()}>
                       {(locked as any).universities?.name || `University ${locked.university_id}`}
