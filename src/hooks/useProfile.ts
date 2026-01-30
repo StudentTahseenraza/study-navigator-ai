@@ -59,6 +59,126 @@ export const useProfile = () => {
     },
   });
 
+  // NEW FUNCTION: Update stage based on user progress
+  const updateStage = useMutation({
+    mutationFn: async ({ 
+      shortlistCount = 0, 
+      lockedCount = 0, 
+      taskCompletion = 0, 
+      submittedApps = 0 
+    }: {
+      shortlistCount?: number;
+      lockedCount?: number;
+      taskCompletion?: number; // percentage 0-100
+      submittedApps?: number; // number of submitted applications
+    }) => {
+      if (!user?.id || !profile) throw new Error('Not authenticated or profile not loaded');
+      
+      let newStage = profile.current_stage;
+      const currentStage = profile.current_stage;
+      
+      // Define stage progression logic
+      switch (currentStage) {
+        case 'profile_building':
+          // Move to discovering once profile is built
+          if (profile.onboarding_completed) {
+            newStage = 'discovering';
+          }
+          break;
+          
+        case 'discovering':
+          // Move to shortlisting if user has shortlisted universities
+          if (shortlistCount > 0) {
+            newStage = 'shortlisting';
+          }
+          break;
+          
+        case 'shortlisting':
+          // Move to locked if user has locked universities
+          if (lockedCount > 0) {
+            newStage = 'locked';
+          }
+          break;
+          
+        case 'locked':
+          // Move to applying if user has completed significant tasks for locked universities
+          if (taskCompletion >= 50) { // At least 50% tasks completed
+            newStage = 'applying';
+          }
+          break;
+          
+        case 'applying':
+          // Stay in applying stage - you might want to add a 'completed' stage later
+          // For now, just update the current stage data
+          break;
+          
+        default:
+          // Default to current stage
+          newStage = currentStage;
+      }
+      
+      // Only update if stage changed
+      if (newStage !== currentStage) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .update({ current_stage: newStage })
+          .eq('user_id', user.id)
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
+      }
+      
+      return profile;
+    },
+    onSuccess: (updatedProfile) => {
+      if (updatedProfile && updatedProfile.current_stage !== profile?.current_stage) {
+        queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+        toast({
+          title: 'Progress updated!',
+          description: `You've advanced to ${getStageLabel(updatedProfile.current_stage)} stage.`,
+        });
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Error updating stage:', error);
+    },
+  });
+
+  // Helper function to get stage label
+  const getStageLabel = (stage: string): string => {
+    switch (stage) {
+      case 'onboarding': return 'Onboarding';
+      case 'profile_building': return 'Profile Building';
+      case 'discovering': return 'Discovering Universities';
+      case 'shortlisting': return 'Shortlisting';
+      case 'locked': return 'Universities Locked';
+      case 'applying': return 'Applying';
+      default: return 'Getting Started';
+    }
+  };
+
+  // Function to manually trigger stage check
+  const checkAndUpdateStage = async ({
+    shortlistCount,
+    lockedCount,
+    taskCompletion,
+    submittedApps,
+  }: {
+    shortlistCount?: number;
+    lockedCount?: number;
+    taskCompletion?: number;
+    submittedApps?: number;
+  }) => {
+    return updateStage.mutateAsync({
+      shortlistCount,
+      lockedCount,
+      taskCompletion,
+      submittedApps,
+    });
+  };
+
   const calculateProfileStrength = (p: Profile | null): number => {
     if (!p) return 0;
     
@@ -90,6 +210,9 @@ export const useProfile = () => {
     isLoading,
     error,
     updateProfile,
+    updateStage,
+    checkAndUpdateStage,
+    getStageLabel,
     calculateProfileStrength,
   };
 };

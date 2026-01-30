@@ -58,10 +58,14 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [reminderType, setReminderType] = useState<ReminderType>('application_deadline');
+  const [reminderType, setReminderType] =
+    useState<ReminderType>('application_deadline');
+
+  // ✅ FIX: never use empty string for SelectItem
   const [selectedUniversityId, setSelectedUniversityId] = useState<string>(
-    universityId?.toString() || ''
+    universityId ? universityId.toString() : 'none'
   );
+
   const [deadlineDate, setDeadlineDate] = useState<Date>();
   const [selectedDays, setSelectedDays] = useState<number[]>([7, 3, 1]);
 
@@ -72,7 +76,13 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
       title,
       description: description || null,
       reminder_type: reminderType,
-      university_id: selectedUniversityId ? parseInt(selectedUniversityId) : null,
+
+      // ✅ FIX: handle "none" explicitly
+      university_id:
+        selectedUniversityId !== 'none'
+          ? parseInt(selectedUniversityId)
+          : null,
+
       deadline_date: format(deadlineDate, 'yyyy-MM-dd'),
       remind_days_before: selectedDays,
       is_active: true,
@@ -82,7 +92,7 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
     setTitle('');
     setDescription('');
     setReminderType('application_deadline');
-    setSelectedUniversityId(universityId?.toString() || '');
+    setSelectedUniversityId(universityId ? universityId.toString() : 'none');
     setDeadlineDate(undefined);
     setSelectedDays([7, 3, 1]);
     setOpen(false);
@@ -90,7 +100,9 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
 
   const toggleDay = (day: number) => {
     setSelectedDays(prev =>
-      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day].sort((a, b) => b - a)
+      prev.includes(day)
+        ? prev.filter(d => d !== day)
+        : [...prev, day].sort((a, b) => b - a)
     );
   };
 
@@ -104,9 +116,12 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
           </Button>
         )}
       </DialogTrigger>
+
       <DialogContent className="glass-card border-border sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display text-xl">Create Deadline Reminder</DialogTitle>
+          <DialogTitle className="font-display text-xl">
+            Create Deadline Reminder
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 pt-4">
@@ -124,9 +139,12 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
           {/* Reminder Type */}
           <div className="space-y-2">
             <Label>Reminder Type</Label>
-            <Select value={reminderType} onValueChange={(v) => setReminderType(v as ReminderType)}>
+            <Select
+              value={reminderType}
+              onValueChange={(v) => setReminderType(v as ReminderType)}
+            >
               <SelectTrigger className="bg-secondary border-border">
-                <SelectValue />
+                <SelectValue placeholder="Select reminder type" />
               </SelectTrigger>
               <SelectContent>
                 {Object.entries(reminderTypeLabels).map(([value, label]) => (
@@ -142,15 +160,25 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
           {lockedUniversities.length > 0 && (
             <div className="space-y-2">
               <Label>Related University (Optional)</Label>
-              <Select value={selectedUniversityId} onValueChange={setSelectedUniversityId}>
+              <Select
+                value={selectedUniversityId}
+                onValueChange={setSelectedUniversityId}
+              >
                 <SelectTrigger className="bg-secondary border-border">
                   <SelectValue placeholder="Select a university" />
                 </SelectTrigger>
+
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  {/* ✅ FIXED */}
+                  <SelectItem value="none">None</SelectItem>
+
                   {lockedUniversities.map((locked) => (
-                    <SelectItem key={locked.university_id} value={locked.university_id.toString()}>
-                      {(locked as any).universities?.name || `University ${locked.university_id}`}
+                    <SelectItem
+                      key={locked.university_id}
+                      value={locked.university_id.toString()}
+                    >
+                      {(locked as any).universities?.name ||
+                        `University ${locked.university_id}`}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -171,7 +199,9 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {deadlineDate ? format(deadlineDate, 'PPP') : 'Pick a date'}
+                  {deadlineDate
+                    ? format(deadlineDate, 'PPP')
+                    : 'Pick a date'}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -224,7 +254,12 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
           {/* Submit */}
           <Button
             onClick={handleSubmit}
-            disabled={!title || !deadlineDate || selectedDays.length === 0 || createReminder.isPending}
+            disabled={
+              !title ||
+              !deadlineDate ||
+              selectedDays.length === 0 ||
+              createReminder.isPending
+            }
             className="w-full gradient-bg text-white"
           >
             {createReminder.isPending ? 'Creating...' : 'Create Reminder'}

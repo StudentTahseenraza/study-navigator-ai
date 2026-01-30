@@ -1,26 +1,35 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { UniversityCard } from '@/components/UniversityCard';
 import { useUniversities } from '@/hooks/useUniversities';
 import { useProfile } from '@/hooks/useProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import {
   Search,
-  MapPin,
-  DollarSign,
-  TrendingUp,
-  Star,
-  Plus,
-  Check,
-  GraduationCap,
   Filter,
   X,
   Globe,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Target,
+  Shield,
+  Loader2,
 } from 'lucide-react';
+import type { Tables } from '@/integrations/supabase/types';
 
-const countries = ['All', 'USA', 'UK', 'Canada', 'Australia', 'Germany', 'Netherlands', 'Switzerland', 'Singapore'];
+const countries = [
+  'All', 'USA', 'UK', 'Canada', 'Australia', 'Germany', 'Netherlands', 
+  'Switzerland', 'Singapore', 'Japan', 'Hong Kong', 'South Korea', 'France', 
+  'Sweden', 'Denmark', 'Norway', 'Finland', 'Belgium', 'Austria', 'Ireland',
+  'New Zealand', 'Spain', 'Italy', 'China', 'Taiwan', 'India', 'UAE', 
+  'Malaysia', 'Thailand', 'Brazil', 'Mexico', 'South Africa', 'Turkey', 
+  'Egypt', 'Philippines', 'Indonesia', 'Vietnam', 'Israel', 'Russia'
+];
+
+const ITEMS_PER_PAGE = 12;
 
 export const Universities = () => {
   const { universities, loadingUniversities, addToShortlist, isShortlisted } = useUniversities();
@@ -29,17 +38,41 @@ export const Universities = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('All');
   const [sortBy, setSortBy] = useState('ranking');
-  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showCategory, setShowCategory] = useState<'all' | 'dream' | 'target' | 'safe'>('all');
 
-  const filteredUniversities = universities
-    .filter(uni => {
+  const filteredUniversities = useMemo(() => {
+    let filtered = universities.filter(uni => {
       const matchesSearch = uni.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         uni.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
         uni.programs?.some(p => p.toLowerCase().includes(searchQuery.toLowerCase()));
       const matchesCountry = selectedCountry === 'All' || uni.country === selectedCountry;
       return matchesSearch && matchesCountry;
-    })
-    .sort((a, b) => {
+    });
+
+    // Categorize universities
+    const categorized = filtered.map(uni => {
+      const userGpa = profile?.gpa || 3.0;
+      const minGpa = uni.min_gpa || 3.0;
+      const acceptanceRate = uni.acceptance_rate || 50;
+
+      if (acceptanceRate < 20 || minGpa > userGpa + 0.3) {
+        return { ...uni, category: 'dream' as const };
+      } else if (acceptanceRate < 50 || minGpa > userGpa - 0.2) {
+        return { ...uni, category: 'target' as const };
+      }
+      return { ...uni, category: 'safe' as const };
+    });
+
+    // Filter by selected category
+    if (showCategory !== 'all') {
+      filtered = categorized.filter(uni => uni.category === showCategory);
+    } else {
+      filtered = categorized;
+    }
+
+    // Sort
+    return filtered.sort((a, b) => {
       switch (sortBy) {
         case 'ranking':
           return (a.ranking || 999) - (b.ranking || 999);
@@ -49,39 +82,45 @@ export const Universities = () => {
           return (b.tuition_max || 0) - (a.tuition_max || 0);
         case 'acceptance':
           return (b.acceptance_rate || 0) - (a.acceptance_rate || 0);
+        case 'fit_score': {
+          const calculateFitScore = (uni: typeof a) => {
+            let score = 0;
+            const userGpa = profile?.gpa || 3.0;
+            if (uni.min_gpa) {
+              const gpaDiff = (userGpa - uni.min_gpa) * 10;
+              score += Math.max(0, Math.min(30, gpaDiff));
+            }
+            if (uni.acceptance_rate) {
+              score += Math.min(40, uni.acceptance_rate * 0.4);
+            }
+            return score;
+          };
+          return calculateFitScore(b) - calculateFitScore(a);
+        }
         default:
           return 0;
       }
     });
+  }, [universities, searchQuery, selectedCountry, sortBy, showCategory, profile?.gpa]);
 
-  const categorizeUniversity = (uni: typeof universities[0]) => {
+  const totalPages = Math.ceil(filteredUniversities.length / ITEMS_PER_PAGE);
+  const paginatedUniversities = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredUniversities.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredUniversities, currentPage]);
+
+  const handleAddToShortlist = async (uni: Tables<'universities'>) => {
     const userGpa = profile?.gpa || 3.0;
     const minGpa = uni.min_gpa || 3.0;
     const acceptanceRate = uni.acceptance_rate || 50;
 
+    let category: 'dream' | 'target' | 'safe' = 'safe';
     if (acceptanceRate < 20 || minGpa > userGpa + 0.3) {
-      return 'dream';
+      category = 'dream';
     } else if (acceptanceRate < 50 || minGpa > userGpa - 0.2) {
-      return 'target';
+      category = 'target';
     }
-    return 'safe';
-  };
 
-  const getCategoryStyles = (category: string) => {
-    switch (category) {
-      case 'dream':
-        return 'bg-primary/20 text-primary border-primary/30';
-      case 'target':
-        return 'bg-success/20 text-success border-success/30';
-      case 'safe':
-        return 'bg-warning/20 text-warning border-warning/30';
-      default:
-        return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const handleAddToShortlist = async (uni: typeof universities[0]) => {
-    const category = categorizeUniversity(uni);
     await addToShortlist.mutateAsync({
       universityId: uni.id,
       category,
@@ -90,48 +129,154 @@ export const Universities = () => {
     });
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCountry, sortBy, showCategory]);
+
+  const categoryCounts = useMemo(() => {
+    const userGpa = profile?.gpa || 3.0;
+    return {
+      dream: universities.filter(u => {
+        const minGpa = u.min_gpa || 3.0;
+        const acceptanceRate = u.acceptance_rate || 50;
+        return acceptanceRate < 20 || minGpa > userGpa + 0.3;
+      }).length,
+      target: universities.filter(u => {
+        const minGpa = u.min_gpa || 3.0;
+        const acceptanceRate = u.acceptance_rate || 50;
+        return (acceptanceRate >= 20 && acceptanceRate < 50) || 
+               (minGpa > userGpa - 0.2 && minGpa <= userGpa + 0.3);
+      }).length,
+      safe: universities.filter(u => {
+        const minGpa = u.min_gpa || 3.0;
+        const acceptanceRate = u.acceptance_rate || 50;
+        return acceptanceRate >= 50 && minGpa <= userGpa - 0.2;
+      }).length
+    };
+  }, [universities, profile?.gpa]);
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold mb-1">Discover Universities</h1>
-            <p className="text-muted-foreground">
-              Find universities that match your profile and goals
+            <h1 className="font-display text-3xl font-bold mb-1 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Discover Universities
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Explore {universities.length}+ universities worldwide with real logos and data
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
             <Globe className="w-4 h-4" />
             <span>{filteredUniversities.length} universities found</span>
+            {filteredUniversities.length > ITEMS_PER_PAGE && (
+              <span className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 px-3 py-1 rounded-full text-xs font-medium">
+                Page {currentPage} of {totalPages}
+              </span>
+            )}
           </div>
         </div>
 
+        {/* Category Filter */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Button
+            variant={showCategory === 'all' ? 'default' : 'outline'}
+            onClick={() => setShowCategory('all')}
+            className={`justify-start h-auto py-4 ${
+              showCategory === 'all' 
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white' 
+                : ''
+            }`}
+          >
+            <Globe className="w-5 h-5 mr-3" />
+            <div className="text-left">
+              <div className="font-semibold">All Universities</div>
+              <div className="text-sm opacity-80">{universities.length} total</div>
+            </div>
+          </Button>
+
+          <Button
+            variant={showCategory === 'dream' ? 'default' : 'outline'}
+            onClick={() => setShowCategory('dream')}
+            className={`justify-start h-auto py-4 ${
+              showCategory === 'dream' 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
+                : ''
+            }`}
+          >
+            <Sparkles className="w-5 h-5 mr-3" />
+            <div className="text-left">
+              <div className="font-semibold">Dream</div>
+              <div className="text-sm opacity-80">{categoryCounts.dream} universities</div>
+            </div>
+          </Button>
+
+          <Button
+            variant={showCategory === 'target' ? 'default' : 'outline'}
+            onClick={() => setShowCategory('target')}
+            className={`justify-start h-auto py-4 ${
+              showCategory === 'target' 
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' 
+                : ''
+            }`}
+          >
+            <Target className="w-5 h-5 mr-3" />
+            <div className="text-left">
+              <div className="font-semibold">Target</div>
+              <div className="text-sm opacity-80">{categoryCounts.target} universities</div>
+            </div>
+          </Button>
+
+          <Button
+            variant={showCategory === 'safe' ? 'default' : 'outline'}
+            onClick={() => setShowCategory('safe')}
+            className={`justify-start h-auto py-4 ${
+              showCategory === 'safe' 
+                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white' 
+                : ''
+            }`}
+          >
+            <Shield className="w-5 h-5 mr-3" />
+            <div className="text-left">
+              <div className="font-semibold">Safe</div>
+              <div className="text-sm opacity-80">{categoryCounts.safe} universities</div>
+            </div>
+          </Button>
+        </div>
+
         {/* Search and Filters */}
-        <div className="glass-card p-4">
+        <div className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <Input
                 placeholder="Search universities, programs, or countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-secondary border-border"
+                className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-xl h-12"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >
-                  <X className="w-4 h-4 text-muted-foreground hover:text-foreground" />
+                  <X className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                 </button>
               )}
             </div>
 
             <div className="flex gap-2">
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger className="w-40 bg-secondary border-border">
-                  <MapPin className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-40 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-xl h-12">
+                  <Filter className="w-4 h-4 mr-2" />
                   <SelectValue placeholder="Country" />
                 </SelectTrigger>
                 <SelectContent>
@@ -142,8 +287,10 @@ export const Universities = () => {
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40 bg-secondary border-border">
-                  <TrendingUp className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-40 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-xl h-12">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                  </svg>
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,25 +298,41 @@ export const Universities = () => {
                   <SelectItem value="tuition_low">Tuition (Low to High)</SelectItem>
                   <SelectItem value="tuition_high">Tuition (High to Low)</SelectItem>
                   <SelectItem value="acceptance">Acceptance Rate</SelectItem>
+                  <SelectItem value="fit_score">Fit Score</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {/* Category Legend */}
-          <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-border">
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-3 h-3 rounded-full bg-primary" />
-              <span>Dream (Competitive)</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-3 h-3 rounded-full bg-success" />
-              <span>Target (Good Fit)</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <div className="w-3 h-3 rounded-full bg-warning" />
-              <span>Safe (High Chance)</span>
-            </div>
+          {/* Active Filters */}
+          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            {(selectedCountry !== 'All' || searchQuery || showCategory !== 'all') && (
+              <div className="text-sm text-gray-600 dark:text-gray-400 mr-2">Active filters:</div>
+            )}
+            {selectedCountry !== 'All' && (
+              <div className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm flex items-center gap-1">
+                Country: {selectedCountry}
+                <button onClick={() => setSelectedCountry('All')}>
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {searchQuery && (
+              <div className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm flex items-center gap-1">
+                Search: "{searchQuery}"
+                <button onClick={() => setSearchQuery('')}>
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+            {showCategory !== 'all' && (
+              <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm flex items-center gap-1">
+                {showCategory.charAt(0).toUpperCase() + showCategory.slice(1)} only
+                <button onClick={() => setShowCategory('all')}>
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -177,146 +340,117 @@ export const Universities = () => {
         {loadingUniversities ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="glass-card p-6 animate-pulse">
-                <div className="h-6 bg-muted rounded w-3/4 mb-4" />
-                <div className="h-4 bg-muted rounded w-1/2 mb-2" />
-                <div className="h-4 bg-muted rounded w-2/3" />
+              <div key={i} className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 animate-pulse">
+                <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-4" />
+                <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-2" />
+                <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-2/3" />
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredUniversities.map(uni => {
-              const category = categorizeUniversity(uni);
-              const shortlisted = isShortlisted(uni.id);
-              
-              return (
-                <div
-                  key={uni.id}
-                  className={`university-card ${category}`}
-                >
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge className={getCategoryStyles(category)}>
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </Badge>
-                        {uni.ranking && (
-                          <span className="text-xs text-muted-foreground">
-                            #{uni.ranking} World
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-display text-lg font-semibold leading-tight">
-                        {uni.name}
-                      </h3>
-                    </div>
-                    <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
-                      <GraduationCap className="w-6 h-6 text-primary" />
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                    <MapPin className="w-4 h-4" />
-                    <span>{uni.city}, {uni.country}</span>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="p-3 rounded-lg bg-secondary/50">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                        <DollarSign className="w-3 h-3" />
-                        Tuition/Year
-                      </div>
-                      <p className="font-semibold text-sm">
-                        ${((uni.tuition_min || 0) / 1000).toFixed(0)}k - ${((uni.tuition_max || 0) / 1000).toFixed(0)}k
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-secondary/50">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
-                        <TrendingUp className="w-3 h-3" />
-                        Acceptance
-                      </div>
-                      <p className="font-semibold text-sm">
-                        {uni.acceptance_rate?.toFixed(1)}%
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Requirements */}
-                  <div className="space-y-2 mb-4">
-                    {uni.min_gpa && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Min GPA</span>
-                        <span className="font-medium">{uni.min_gpa.toFixed(1)}</span>
-                      </div>
-                    )}
-                    {uni.min_ielts && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">IELTS</span>
-                        <span className="font-medium">{uni.min_ielts.toFixed(1)}+</span>
-                      </div>
-                    )}
-                    {uni.min_gre && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">GRE</span>
-                        <span className="font-medium">{uni.min_gre}+</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Programs */}
-                  {uni.programs && uni.programs.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {uni.programs.slice(0, 3).map(program => (
-                        <span
-                          key={program}
-                          className="px-2 py-0.5 rounded text-xs bg-muted text-muted-foreground"
-                        >
-                          {program}
-                        </span>
-                      ))}
-                      {uni.programs.length > 3 && (
-                        <span className="px-2 py-0.5 text-xs text-muted-foreground">
-                          +{uni.programs.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Action Button */}
-                  <Button
-                    onClick={() => handleAddToShortlist(uni)}
-                    disabled={shortlisted || addToShortlist.isPending}
-                    variant={shortlisted ? 'outline' : 'default'}
-                    className={`w-full ${!shortlisted ? 'gradient-bg text-white hover:opacity-90' : ''}`}
-                  >
-                    {shortlisted ? (
-                      <>
-                        <Check className="w-4 h-4 mr-2" />
-                        Shortlisted
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add to Shortlist
-                      </>
-                    )}
-                  </Button>
+          <>
+            {paginatedUniversities.length > 0 ? (
+              <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedUniversities.map((uni) => (
+                    <UniversityCard
+                      key={uni.id}
+                      university={uni}
+                      category={uni.category}
+                      isShortlisted={isShortlisted(uni.id)}
+                      onAddToShortlist={handleAddToShortlist}
+                      profileGpa={profile?.gpa}
+                    />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        )}
 
-        {filteredUniversities.length === 0 && !loadingUniversities && (
-          <div className="text-center py-12">
-            <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-            <h3 className="font-display text-xl font-semibold mb-2">No universities found</h3>
-            <p className="text-muted-foreground">Try adjusting your search or filters</p>
-          </div>
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="rounded-full border-2"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      
+                      return (
+                        <Button
+                          key={pageNum}
+                          variant={currentPage === pageNum ? "default" : "outline"}
+                          size="icon"
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`w-10 rounded-full ${
+                            currentPage === pageNum 
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                              : ''
+                          }`}
+                        >
+                          {pageNum}
+                        </Button>
+                      );
+                    })}
+                    
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="rounded-full border-2"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                    
+                    <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
+                      Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
+                      {Math.min(currentPage * ITEMS_PER_PAGE, filteredUniversities.length)} of {filteredUniversities.length} universities
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-full flex items-center justify-center">
+                  <Search className="w-10 h-10 text-gray-400" />
+                </div>
+                <h3 className="font-display text-xl font-semibold mb-2">No universities found</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filters</p>
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCountry('All');
+                      setShowCategory('all');
+                      setSortBy('ranking');
+                    }}
+                  >
+                    Clear all filters
+                  </Button>
+                  <a href="#search">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
+                      Back to search
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </DashboardLayout>
