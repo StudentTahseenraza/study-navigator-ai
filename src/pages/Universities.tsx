@@ -174,11 +174,11 @@ export const Universities = () => {
               Explore {universities.length}+ universities worldwide with real logos and data
             </p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
             <Globe className="w-4 h-4" />
             <span>{filteredUniversities.length} universities found</span>
             {filteredUniversities.length > ITEMS_PER_PAGE && (
-              <span className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 px-3 py-1 rounded-full text-xs font-medium">
+              <span className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 px-3 py-1 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300">
                 Page {currentPage} of {totalPages}
               </span>
             )}
@@ -190,10 +190,10 @@ export const Universities = () => {
           <Button
             variant={showCategory === 'all' ? 'default' : 'outline'}
             onClick={() => setShowCategory('all')}
-            className={`justify-start h-auto py-4 ${
+            className={`justify-start h-auto py-4 transition-all ${
               showCategory === 'all' 
-                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white' 
-                : ''
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             <Globe className="w-5 h-5 mr-3" />
@@ -206,10 +206,10 @@ export const Universities = () => {
           <Button
             variant={showCategory === 'dream' ? 'default' : 'outline'}
             onClick={() => setShowCategory('dream')}
-            className={`justify-start h-auto py-4 ${
+            className={`justify-start h-auto py-4 transition-all ${
               showCategory === 'dream' 
-                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white' 
-                : ''
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             <Sparkles className="w-5 h-5 mr-3" />
@@ -222,10 +222,10 @@ export const Universities = () => {
           <Button
             variant={showCategory === 'target' ? 'default' : 'outline'}
             onClick={() => setShowCategory('target')}
-            className={`justify-start h-auto py-4 ${
+            className={`justify-start h-auto py-4 transition-all ${
               showCategory === 'target' 
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white' 
-                : ''
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white border-0' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             <Target className="w-5 h-5 mr-3" />
@@ -238,10 +238,10 @@ export const Universities = () => {
           <Button
             variant={showCategory === 'safe' ? 'default' : 'outline'}
             onClick={() => setShowCategory('safe')}
-            className={`justify-start h-auto py-4 ${
+            className={`justify-start h-auto py-4 transition-all ${
               showCategory === 'safe' 
-                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white' 
-                : ''
+                ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white border-0' 
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             <Shield className="w-5 h-5 mr-3" />
@@ -252,8 +252,8 @@ export const Universities = () => {
           </Button>
         </div>
 
-        {/* Search and Filters */}
-        <div className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 rounded-2xl p-5 border border-gray-200 dark:border-gray-800 shadow-sm">
+        {/* Search and Filters - DARK THEME UPDATED */}
+        <div className="bg-gray-900 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl p-5 border border-gray-800 dark:border-gray-700 shadow-lg">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -261,74 +261,89 @@ export const Universities = () => {
                 placeholder="Search universities, programs, or countries..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-xl h-12"
+                className="pl-10 bg-gray-800 border-gray-700 text-gray-100 placeholder:text-gray-500 rounded-xl h-12 focus:border-blue-500 focus:ring-blue-500/20 transition-all"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >
-                  <X className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                  <X className="w-4 h-4 text-gray-400 hover:text-gray-300 transition-colors" />
                 </button>
               )}
             </div>
 
             <div className="flex gap-2">
               <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-                <SelectTrigger className="w-40 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-xl h-12">
-                  <Filter className="w-4 h-4 mr-2" />
+                <SelectTrigger className="w-40 bg-gray-800 border-gray-700 text-gray-100 rounded-xl h-12 focus:ring-blue-500/20">
+                  <Filter className="w-4 h-4 mr-2 text-gray-400" />
                   <SelectValue placeholder="Country" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
                   {countries.map(country => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
+                    <SelectItem 
+                      key={country} 
+                      value={country}
+                      className="focus:bg-gray-700 focus:text-gray-100"
+                    >
+                      {country}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-40 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 rounded-xl h-12">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <SelectTrigger className="w-40 bg-gray-800 border-gray-700 text-gray-100 rounded-xl h-12 focus:ring-blue-500/20">
+                  <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
                   </svg>
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ranking">Ranking</SelectItem>
-                  <SelectItem value="tuition_low">Tuition (Low to High)</SelectItem>
-                  <SelectItem value="tuition_high">Tuition (High to Low)</SelectItem>
-                  <SelectItem value="acceptance">Acceptance Rate</SelectItem>
-                  <SelectItem value="fit_score">Fit Score</SelectItem>
+                <SelectContent className="bg-gray-800 border-gray-700 text-gray-100">
+                  <SelectItem value="ranking" className="focus:bg-gray-700">Ranking</SelectItem>
+                  <SelectItem value="tuition_low" className="focus:bg-gray-700">Tuition (Low to High)</SelectItem>
+                  <SelectItem value="tuition_high" className="focus:bg-gray-700">Tuition (High to Low)</SelectItem>
+                  <SelectItem value="acceptance" className="focus:bg-gray-700">Acceptance Rate</SelectItem>
+                  <SelectItem value="fit_score" className="focus:bg-gray-700">Fit Score</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
           {/* Active Filters */}
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-800">
             {(selectedCountry !== 'All' || searchQuery || showCategory !== 'all') && (
-              <div className="text-sm text-gray-600 dark:text-gray-400 mr-2">Active filters:</div>
+              <div className="text-sm text-gray-400 mr-2">Active filters:</div>
             )}
             {selectedCountry !== 'All' && (
-              <div className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm flex items-center gap-1">
+              <div className="px-3 py-1 bg-blue-900/40 text-blue-300 rounded-full text-sm flex items-center gap-1 border border-blue-800/50">
                 Country: {selectedCountry}
-                <button onClick={() => setSelectedCountry('All')}>
+                <button 
+                  onClick={() => setSelectedCountry('All')}
+                  className="hover:text-blue-200 transition-colors"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </div>
             )}
             {searchQuery && (
-              <div className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm flex items-center gap-1">
+              <div className="px-3 py-1 bg-purple-900/40 text-purple-300 rounded-full text-sm flex items-center gap-1 border border-purple-800/50">
                 Search: "{searchQuery}"
-                <button onClick={() => setSearchQuery('')}>
+                <button 
+                  onClick={() => setSearchQuery('')}
+                  className="hover:text-purple-200 transition-colors"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </div>
             )}
             {showCategory !== 'all' && (
-              <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-sm flex items-center gap-1">
+              <div className="px-3 py-1 bg-emerald-900/40 text-emerald-300 rounded-full text-sm flex items-center gap-1 border border-emerald-800/50">
                 {showCategory.charAt(0).toUpperCase() + showCategory.slice(1)} only
-                <button onClick={() => setShowCategory('all')}>
+                <button 
+                  onClick={() => setShowCategory('all')}
+                  className="hover:text-emerald-200 transition-colors"
+                >
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -340,10 +355,10 @@ export const Universities = () => {
         {loadingUniversities ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-xl p-5 animate-pulse">
-                <div className="h-6 bg-gray-300 dark:bg-gray-700 rounded w-3/4 mb-4" />
-                <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-1/2 mb-2" />
-                <div className="h-4 bg-gray-300 dark:bg-gray-700 rounded w-2/3" />
+              <div key={i} className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-5 animate-pulse">
+                <div className="h-6 bg-gray-700 rounded w-3/4 mb-4" />
+                <div className="h-4 bg-gray-700 rounded w-1/2 mb-2" />
+                <div className="h-4 bg-gray-700 rounded w-2/3" />
               </div>
             ))}
           </div>
@@ -364,7 +379,7 @@ export const Universities = () => {
                   ))}
                 </div>
 
-                {/* Pagination */}
+                {/* Pagination - Dark Theme */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2 mt-8">
                     <Button
@@ -372,7 +387,7 @@ export const Universities = () => {
                       size="icon"
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={currentPage === 1}
-                      className="rounded-full border-2"
+                      className="rounded-full border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </Button>
@@ -397,8 +412,8 @@ export const Universities = () => {
                           onClick={() => handlePageChange(pageNum)}
                           className={`w-10 rounded-full ${
                             currentPage === pageNum 
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-                              : ''
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0' 
+                              : 'border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
                           }`}
                         >
                           {pageNum}
@@ -411,12 +426,12 @@ export const Universities = () => {
                       size="icon"
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={currentPage === totalPages}
-                      className="rounded-full border-2"
+                      className="rounded-full border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </Button>
                     
-                    <span className="text-sm text-gray-600 dark:text-gray-400 ml-4">
+                    <span className="text-sm text-gray-400 ml-4">
                       Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
                       {Math.min(currentPage * ITEMS_PER_PAGE, filteredUniversities.length)} of {filteredUniversities.length} universities
                     </span>
@@ -425,11 +440,11 @@ export const Universities = () => {
               </>
             ) : (
               <div className="text-center py-12">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-full flex items-center justify-center">
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full flex items-center justify-center">
                   <Search className="w-10 h-10 text-gray-400" />
                 </div>
-                <h3 className="font-display text-xl font-semibold mb-2">No universities found</h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">Try adjusting your search or filters</p>
+                <h3 className="font-display text-xl font-semibold mb-2 text-gray-100">No universities found</h3>
+                <p className="text-gray-400 mb-6">Try adjusting your search or filters</p>
                 <div className="flex gap-2 justify-center">
                   <Button
                     variant="outline"
@@ -439,14 +454,16 @@ export const Universities = () => {
                       setShowCategory('all');
                       setSortBy('ranking');
                     }}
+                    className="border-gray-700 bg-gray-800 text-gray-300 hover:bg-gray-700"
                   >
                     Clear all filters
                   </Button>
-                  <a href="#search">
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600">
-                      Back to search
-                    </Button>
-                  </a>
+                  <Button 
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90"
+                    onClick={() => document.getElementById('search-section')?.scrollIntoView()}
+                  >
+                    Back to search
+                  </Button>
                 </div>
               </div>
             )}

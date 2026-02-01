@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState } from 'react'; 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -117,7 +118,7 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
         )}
       </DialogTrigger>
 
-      <DialogContent className="glass-card border-border sm:max-w-md">
+      <DialogContent className="glass-card border-border sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display text-xl">
             Create Deadline Reminder
@@ -146,7 +147,7 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
               <SelectTrigger className="bg-secondary border-border">
                 <SelectValue placeholder="Select reminder type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="z-[100]">
                 {Object.entries(reminderTypeLabels).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
                     {label}
@@ -168,7 +169,7 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
                   <SelectValue placeholder="Select a university" />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent className="z-[100]">
                   {/* ✅ FIXED */}
                   <SelectItem value="none">None</SelectItem>
 
@@ -204,7 +205,7 @@ export const AddReminderDialog = ({ universityId, trigger }: AddReminderDialogPr
                     : 'Pick a date'}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 z-[100]" align="start">
                 <Calendar
                   mode="single"
                   selected={deadlineDate}
