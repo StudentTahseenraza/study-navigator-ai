@@ -371,7 +371,7 @@ export const Universities = () => {
                     <UniversityCard
                       key={uni.id}
                       university={uni}
-                      category={uni.category}
+                      category={(uni as any).category}
                       isShortlisted={isShortlisted(uni.id)}
                       onAddToShortlist={handleAddToShortlist}
                       profileGpa={profile?.gpa}

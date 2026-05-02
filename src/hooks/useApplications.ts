@@ -13,6 +13,8 @@ export interface ApplicationProgress {
   status: ApplicationStatus;
   appliedAt: string | null;
   decisionDate: string | null;
+  deadline: string | null;
+  submissionMethod: string | null;
   applicationPortalUrl: string | null;
   applicationId: string | null;
   totalTasks: number;
@@ -42,6 +44,8 @@ export const useApplications = () => {
       status: ((locked as any).application_status || 'not_started') as ApplicationStatus,
       appliedAt: (locked as any).applied_at || null,
       decisionDate: (locked as any).decision_date || null,
+      deadline: university?.application_deadline || null,
+      submissionMethod: (locked as any).submission_method || null,
       applicationPortalUrl: (locked as any).application_portal_url || null,
       applicationId: (locked as any).application_id || null,
       totalTasks,
@@ -59,12 +63,16 @@ export const useApplications = () => {
       applicationPortalUrl,
       applicationId,
       decisionDate,
+      submissionMethod,
+      rejectionReason,
     }: { 
       universityId: number; 
       status: ApplicationStatus;
       applicationPortalUrl?: string;
       applicationId?: string;
       decisionDate?: string;
+      submissionMethod?: string;
+      rejectionReason?: string;
     }) => {
       if (!user?.id) throw new Error('Not authenticated');
       
@@ -88,9 +96,14 @@ export const useApplications = () => {
         updateData.decision_date = decisionDate;
       }
       
+      // Note: submissionMethod and rejectionReason are accepted by the API
+      // but not yet persisted (no DB columns). Kept for future use.
+      void submissionMethod;
+      void rejectionReason;
+      
       const { data, error } = await supabase
         .from('locked_universities')
-        .update(updateData)
+        .update(updateData as any)
         .eq('user_id', user.id)
         .eq('university_id', universityId)
         .select()

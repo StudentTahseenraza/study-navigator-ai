@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useProfile } from '@/hooks/useProfile';
 import { useUniversities } from '@/hooks/useUniversities';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceAgent } from '@/components/voice/VoiceAgent';
 import ReactMarkdown from 'react-markdown';
 import {
   Send,
@@ -15,6 +16,7 @@ import {
   Bot,
   GraduationCap,
   AlertCircle,
+  Mic,
 } from 'lucide-react';
 
 interface Message {
@@ -56,6 +58,7 @@ What would you like to discuss today?`,
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -211,12 +214,15 @@ What would you like to discuss today?`,
           <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="font-display text-2xl font-bold">AI Counsellor</h1>
             <p className="text-muted-foreground text-sm">
               Your personalized study abroad guide
             </p>
           </div>
+          <Button onClick={() => setVoiceOpen(true)} className="gradient-bg text-white hover:opacity-90">
+            <Mic className="w-4 h-4 mr-2" /> Talk to Counsellor
+          </Button>
         </div>
 
         {/* Chat Area */}
@@ -327,6 +333,7 @@ What would you like to discuss today?`,
           </form>
         </div>
       </div>
+      <VoiceAgent open={voiceOpen} onOpenChange={setVoiceOpen} autoStart />
     </DashboardLayout>
   );
 };
