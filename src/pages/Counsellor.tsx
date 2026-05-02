@@ -214,12 +214,15 @@ What would you like to discuss today?`,
           <div className="w-12 h-12 rounded-xl gradient-bg flex items-center justify-center">
             <Sparkles className="w-6 h-6 text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="font-display text-2xl font-bold">AI Counsellor</h1>
             <p className="text-muted-foreground text-sm">
               Your personalized study abroad guide
             </p>
           </div>
+          <Button onClick={() => setVoiceOpen(true)} className="gradient-bg text-white hover:opacity-90">
+            <Mic className="w-4 h-4 mr-2" /> Talk to Counsellor
+          </Button>
         </div>
 
         {/* Chat Area */}
@@ -330,6 +333,7 @@ What would you like to discuss today?`,
           </form>
         </div>
       </div>
+      <VoiceAgent open={voiceOpen} onOpenChange={setVoiceOpen} autoStart />
     </DashboardLayout>
   );
 };
