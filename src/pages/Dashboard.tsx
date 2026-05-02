@@ -37,6 +37,20 @@ export const Dashboard = () => {
   const { shortlist, lockedUniversities } = useUniversities();
   const { pendingTasks, completedTasks } = useTasks();
   const { applicationProgress } = useApplications();
+  const [voiceOpen, setVoiceOpen] = useState(false);
+
+  // Auto-launch voice counsellor once after onboarding completes
+  useEffect(() => {
+    if (!profile?.onboarding_completed || !profile?.user_id) return;
+    const key = `voice_intro_done_${profile.user_id}`;
+    if (typeof window !== 'undefined' && !localStorage.getItem(key)) {
+      const t = setTimeout(() => {
+        setVoiceOpen(true);
+        localStorage.setItem(key, '1');
+      }, 1200);
+      return () => clearTimeout(t);
+    }
+  }, [profile?.onboarding_completed, profile?.user_id]);
 
   const profileStrength = calculateProfileStrength(profile);
   
