@@ -1,9 +1,11 @@
+import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useProfile } from '@/hooks/useProfile';
 import { useUniversities } from '@/hooks/useUniversities';
 import { useTasks } from '@/hooks/useTasks';
 import { useApplications } from '@/hooks/useApplications';
 import { UpcomingDeadlines } from '@/components/notifications/UpcomingDeadlines';
+import { VoiceAgent } from '@/components/voice/VoiceAgent';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
