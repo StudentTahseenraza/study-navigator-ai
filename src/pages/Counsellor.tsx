@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useProfile } from '@/hooks/useProfile';
 import { useUniversities } from '@/hooks/useUniversities';
 import { useToast } from '@/hooks/use-toast';
+import { VoiceAgent } from '@/components/voice/VoiceAgent';
 import ReactMarkdown from 'react-markdown';
 import {
   Send,
@@ -15,6 +16,7 @@ import {
   Bot,
   GraduationCap,
   AlertCircle,
+  Mic,
 } from 'lucide-react';
 
 interface Message {
