@@ -619,6 +619,7 @@ export const Dashboard = () => {
           </div>
         </div>
       </div>
+      <VoiceAgent open={voiceOpen} onOpenChange={setVoiceOpen} autoStart />
     </DashboardLayout>
   );
 };
