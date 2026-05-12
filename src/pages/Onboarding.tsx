@@ -94,6 +94,16 @@ export const Onboarding = () => {
     }
   }, [user, authLoading, profile, navigate]);
 
+  // Auto-open voice onboarding once after profile is created
+  useEffect(() => {
+    if (!user || !profile || profile.onboarding_completed) return;
+    const flagKey = `voice_onboarding_autostart_${user.id}`;
+    if (localStorage.getItem(flagKey)) return;
+    localStorage.setItem(flagKey, '1');
+    const t = setTimeout(() => setVoiceOpen(true), 600);
+    return () => clearTimeout(t);
+  }, [user, profile]);
+
   const handleCountryToggle = (country: string) => {
     setFormData(prev => ({
       ...prev,
