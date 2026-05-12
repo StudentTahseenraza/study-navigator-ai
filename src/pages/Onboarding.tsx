@@ -19,8 +19,10 @@ import {
   Wallet,
   FileText,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Mic
 } from 'lucide-react';
+import { VoiceOnboarding } from '@/components/voice/VoiceOnboarding';
 
 const steps = [
   { id: 1, title: 'Academic Background', icon: BookOpen },
@@ -59,6 +61,7 @@ export const Onboarding = () => {
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [formData, setFormData] = useState({
     // Academic Background
     current_education_level: '',
@@ -180,7 +183,23 @@ export const Onboarding = () => {
           <p className="text-muted-foreground">
             Complete these steps to unlock personalized university recommendations
           </p>
+
+          <div className="mt-6 inline-flex flex-col items-center gap-2">
+            <Button
+              size="lg"
+              onClick={() => setVoiceOpen(true)}
+              className="gradient-bg text-white shadow-lg hover:opacity-90"
+            >
+              <Mic className="w-5 h-5 mr-2" />
+              Onboard with Voice
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              Or fill out the form below manually
+            </span>
+          </div>
         </div>
+
+        <VoiceOnboarding open={voiceOpen} onOpenChange={setVoiceOpen} />
 
         {/* Progress Steps */}
         <div className="flex items-center justify-between mb-12 max-w-2xl mx-auto">
